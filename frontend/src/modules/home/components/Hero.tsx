@@ -1,8 +1,22 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ShieldCheck, Star, Users } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 const Hero = () => {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleFindSitter = () => {
+    if (isAuthenticated) {
+      router.push("/account/find-sitter");
+    } else {
+      router.push("/login");
+    }
+  };
   return (
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden bg-slate-50">
       {/* Abstract Background Blobs */}
@@ -29,17 +43,17 @@ const Hero = () => {
 
             <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
               Find verified, background-checked babysitters in your neighborhood
-              instantly. Our AI matching system ensures the perfect connection
-              for your child's personality.
+              instantly. CareConnect&apos;s Smart Match™ technology ensures the perfect
+              connection for your child's personality.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Link
-                href="/search"
-                className="px-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1"
+              <button
+                onClick={handleFindSitter}
+                className="px-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer"
               >
                 Find a Babysitter
-              </Link>
+              </button>
               <Link
                 href="/apply"
                 className="px-8 py-4 bg-white text-slate-700 border border-slate-200 hover:border-teal-600 hover:text-teal-600 font-semibold rounded-full transition"

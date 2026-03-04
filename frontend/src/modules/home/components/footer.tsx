@@ -23,8 +23,8 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              Making parenting easier by connecting families with trusted,
-              background-checked babysitters through intelligent matching.
+              Connecting families with trusted, background-checked
+              babysitters through intelligent matching.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="hover:text-teal-400 transition">

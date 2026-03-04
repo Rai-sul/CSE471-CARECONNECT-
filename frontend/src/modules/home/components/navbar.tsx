@@ -1,24 +1,34 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, HeartHandshake, Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth"; // আপনার হুক ইম্পোর্ট
+import { useAuth } from "@/hooks/use-auth";
 import UserNav from "./user-nav";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const isBabysitter = isAuthenticated && user?.role === "BABYSITTER";
 
-  // Mobile menu close on route change
+  const navLinks = useMemo(() => {
+    const links = [
+      { name: "Find a Sitter", href: isAuthenticated ? "/account/find-sitter" : "/login" },
+    ];
+    if (isBabysitter) {
+      links.push({ name: "Find Jobs", href: "/account/bookings" });
+    }
+    links.push({ name: "How it Works", href: "#how-it-works" });
+    return links;
+  }, [isAuthenticated, isBabysitter]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsOpen(false);
     }, 0);
-
     return () => clearTimeout(timer);
   }, [pathname]);
 
@@ -26,7 +36,7 @@ const Navbar = () => {
     <nav className="fixed w-full z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100 transition-all duration-300">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
-          {/* Logo Area */}
+          {/* Logo */}
           <Link
             href="/"
             className="flex-shrink-0 flex items-center gap-2.5 group"
@@ -41,11 +51,7 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-1 items-center bg-slate-50/50 p-1.5 rounded-full border border-slate-100">
-            {[
-              { name: "Find a Sitter", href: "/" },
-              { name: "Find Jobs", href: "/jobs" },
-              { name: "How it Works", href: "/how-it-works" },
-            ].map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
@@ -60,9 +66,8 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Right Side Logic */}
+          {/* Right Side */}
           <div className="hidden md:flex items-center gap-4">
-            {/* 🛠️ লোডিং অবস্থায় স্পিনার দেখাবে, তাই কোনো ফ্লিকারিং হবে না */}
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
             ) : isAuthenticated ? (
@@ -87,18 +92,13 @@ const Navbar = () => {
 
           {/* Mobile Menu Toggle */}
           <div className="md:hidden flex items-center gap-4">
-            {/* মোবাইলেও লোডিং চেক করুন */}
             {!isLoading && isAuthenticated && <UserNav />}
-
             <button
               onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
               className="text-slate-600 hover:text-teal-600 transition-colors p-2 bg-slate-50 rounded-lg"
             >
-              {isOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
@@ -113,26 +113,16 @@ const Navbar = () => {
         }`}
       >
         <div className="px-4 pt-4 pb-6 space-y-2">
-          <Link
-            href="/"
-            className="block px-4 py-3 text-slate-700 font-semibold hover:bg-teal-50 rounded-xl"
-          >
-            Find a Sitter
-          </Link>
-          <Link
-            href="/jobs"
-            className="block px-4 py-3 text-slate-700 font-semibold hover:bg-teal-50 rounded-xl"
-          >
-            Find Jobs
-          </Link>
-          <Link
-            href="/how-it-works"
-            className="block px-4 py-3 text-slate-700 font-semibold hover:bg-teal-50 rounded-xl"
-          >
-            How it Works
-          </Link>
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              className="block px-4 py-3 text-slate-700 font-semibold hover:bg-teal-50 rounded-xl"
+            >
+              {link.name}
+            </Link>
+          ))}
 
-          {/* Auth Check for Mobile */}
           {!isLoading && !isAuthenticated && (
             <div className="pt-4 mt-2 border-t border-slate-100 flex flex-col gap-3">
               <Link
