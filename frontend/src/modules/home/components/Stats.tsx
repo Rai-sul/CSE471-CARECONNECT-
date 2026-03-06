@@ -8,8 +8,8 @@ const stats = [
     icon: Users,
     value: "2,000+",
     label: "Verified Sitters",
-    color: "text-teal-600",
-    bgColor: "bg-teal-50",
+    color: "text-purple-600",
+    bgColor: "bg-purple-50",
   },
   {
     icon: HeartHandshake,
@@ -40,7 +40,7 @@ const Stats = () => {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-12 lg:p-16 relative overflow-hidden">
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl" />
 
           <div className="relative text-center mb-12">
