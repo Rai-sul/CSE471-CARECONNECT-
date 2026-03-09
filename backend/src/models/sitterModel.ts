@@ -62,18 +62,39 @@ export const findAll = (filters: {
   location?: string;
   minPrice?: string;
   maxPrice?: string;
+  minExp?: string;
+  minRating?: string;
 }) => {
+  // Build the nested babysitter filter
+  const babysitterWhere: Record<string, unknown> = {};
+
+  if (filters.location) {
+    babysitterWhere.locationAddress = { contains: filters.location, mode: "insensitive" };
+  }
+
+  // Merge hourlyRate conditions into a single object
+  const hourlyRateFilter: Record<string, number> = {};
+  if (filters.minPrice) hourlyRateFilter.gte = parseFloat(filters.minPrice);
+  if (filters.maxPrice) hourlyRateFilter.lte = parseFloat(filters.maxPrice);
+  if (Object.keys(hourlyRateFilter).length > 0) {
+    babysitterWhere.hourlyRate = hourlyRateFilter;
+  }
+
+  if (filters.minExp) {
+    babysitterWhere.experienceYears = { gte: parseInt(filters.minExp, 10) };
+  }
+
+  if (filters.minRating) {
+    babysitterWhere.averageRating = { gte: parseFloat(filters.minRating) };
+  }
+
   const filterClause: Record<string, unknown> = {
     role: "BABYSITTER",
     isApproved: true,
   };
 
-  if (filters.location || filters.minPrice || filters.maxPrice) {
-    filterClause.babysitter = {
-      ...(filters.location && { locationAddress: { contains: filters.location } }),
-      ...(filters.minPrice && { hourlyRate: { gte: parseFloat(filters.minPrice) } }),
-      ...(filters.maxPrice && { hourlyRate: { lte: parseFloat(filters.maxPrice) } }),
-    };
+  if (Object.keys(babysitterWhere).length > 0) {
+    filterClause.babysitter = babysitterWhere;
   }
 
   return prisma.user.findMany({
@@ -81,6 +102,7 @@ export const findAll = (filters: {
     select: {
       id: true,
       name: true,
+      isVerified: true,
       babysitter: {
         select: {
           id: true,
@@ -89,7 +111,15 @@ export const findAll = (filters: {
           locationAddress: true,
           experienceYears: true,
           averageRating: true,
+          totalRatings: true,
+          latitude: true,
+          longitude: true,
           availabilities: true,
+          certifications: {
+            select: {
+              title: true,
+            },
+          },
         },
       },
     },

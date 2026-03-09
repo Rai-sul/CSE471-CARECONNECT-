@@ -40,11 +40,15 @@ export const getMySitterProfile = async (req: AuthRequest, res: Response): Promi
 // @route   GET /api/sitters
 export const getSitters = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { location, minPrice, maxPrice } = req.query as {
-      location?: string; minPrice?: string; maxPrice?: string;
+    const { location, minPrice, maxPrice, minExp, minRating } = req.query as {
+      location?: string;
+      minPrice?: string;
+      maxPrice?: string;
+      minExp?: string;
+      minRating?: string;
     };
 
-    const sitters = await SitterModel.findAll({ location, minPrice, maxPrice });
+    const sitters = await SitterModel.findAll({ location, minPrice, maxPrice, minExp, minRating });
     res.status(200).json({ success: true, sitters });
   } catch (error) {
     console.error("Search Error:", error);

@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { Search, MapPin, Clock, DollarSign, Star, Heart, Filter } from "lucide-react";
 import ImageWithFallback from "@/components/image-with-fallback";
-import axios from "axios";
+import proxy from "@/lib/proxy";
 
 interface Sitter {
-  id: number;
+  id: string | number;
   name: string;
   experience: string;
   rate: string;
@@ -67,29 +67,43 @@ export default function FindSitterPage() {
   useEffect(() => {
     async function fetchSitters() {
       try {
-        const res = await axios.get("http://localhost:5000/api/sitters");
-        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-          const mapped: Sitter[] = res.data.map((s: Record<string, unknown>, i: number) => ({
-            id: (s.id as number) || i + 1,
-            name: (s.name as string) || "Sitter",
-            experience: s.babysitter && (s.babysitter as Record<string, unknown>).experience
-              ? `${(s.babysitter as Record<string, unknown>).experience} years`
-              : "N/A",
-            rate: s.babysitter && (s.babysitter as Record<string, unknown>).hourly_rate
-              ? `$${(s.babysitter as Record<string, unknown>).hourly_rate}/hr`
-              : "Contact for rate",
-            distance: (s.location as string) || "Nearby",
-            rating: s.babysitter && (s.babysitter as Record<string, unknown>).rating
-              ? Number((s.babysitter as Record<string, unknown>).rating)
-              : 4.5,
-            reviews: 0,
-            image: fallbackImages[i % fallbackImages.length],
-            verified: true,
-            specialties: ["Childcare"],
-          }));
+        const res = await proxy.get("/sitters");
+        if (res.data && res.data.sitters && Array.isArray(res.data.sitters)) {
+          const mapped: Sitter[] = res.data.sitters.map((s: any, i: number) => {
+             const bs = s.babysitter || {};
+             const specialties = ["Childcare"];
+             
+             // Check bio for keywords
+             if (bs.bio && typeof bs.bio === 'string') {
+                 const lowerBio = bs.bio.toLowerCase();
+                 if (lowerBio.includes('infant')) specialties.push("Infant Care");
+                 if (lowerBio.includes('special needs') || lowerBio.includes('disability')) specialties.push("Special Needs");
+             }
+         
+             // Check certifications
+             if (bs.certifications && Array.isArray(bs.certifications)) {
+                 const certs = bs.certifications.map((c: any) => c.title ? c.title.toLowerCase() : "");
+                 if (certs.some((t: string) => t.includes('cpr'))) specialties.push("CPR Certified");
+                 if (certs.some((t: string) => t.includes('first aid'))) specialties.push("First Aid");
+             }
+
+             return {
+              id: s.id || i + 1,
+              name: s.name || "Sitter",
+              experience: bs.experienceYears ? `${bs.experienceYears} years` : "N/A",
+              rate: bs.hourlyRate ? `$${bs.hourlyRate}/hr` : "Contact for rate",
+              distance: bs.locationAddress || "Nearby",
+              rating: bs.averageRating ? Number(bs.averageRating) : 4.5,
+              reviews: bs.totalRatings || 0,
+              image: s.profilePicture || fallbackImages[i % fallbackImages.length],
+              verified: s.isVerified || false,
+              specialties: specialties,
+            };
+          });
           setSitters(mapped);
         }
-      } catch {
+      } catch (err) {
+        console.error("Failed to fetch sitters", err);
         // Use static sitters if backend unavailable
       }
     }
@@ -103,6 +117,14 @@ export default function FindSitterPage() {
     certified: "CPR Certified",
     special: "Special Needs",
   };
+
+  const filteredSitters = sitters.filter(sitter => {
+    if (selectedFilter === "all") return true;
+    if (selectedFilter === "infant") return sitter.specialties.includes("Infant Care");
+    if (selectedFilter === "certified") return sitter.specialties.includes("CPR Certified") || sitter.verified;
+    if (selectedFilter === "special") return sitter.specialties.includes("Special Needs");
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-[#F0F4FB]">
@@ -167,7 +189,7 @@ export default function FindSitterPage() {
         {/* Results Count */}
         <div className="mb-6 flex justify-between items-center">
           <p className="text-gray-600">
-            Showing <span className="font-semibold">{sitters.length}</span> available sitters
+            Showing <span className="font-semibold">{filteredSitters.length}</span> available sitters
           </p>
           <button className="flex items-center space-x-2 text-gray-600 hover:text-purple-600">
             <Filter size={20} />
@@ -177,7 +199,7 @@ export default function FindSitterPage() {
 
         {/* Sitters Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sitters.map((sitter) => (
+          {filteredSitters.map((sitter) => (
             <div
               key={sitter.id}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"

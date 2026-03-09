@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import axios from "axios";
+import proxy from "@/lib/proxy";
 import {
   Search,
   MapPin,
@@ -55,16 +55,14 @@ export default function FindSitterPage() {
     try {
       const params = new URLSearchParams();
       if (filters.location) params.append("location", filters.location);
-      if (filters.maxPrice)
+      if (filters.maxPrice < 1500)
         params.append("maxPrice", filters.maxPrice.toString());
       if (filters.minExp > 0)
         params.append("minExp", filters.minExp.toString());
       if (filters.minRating > 0)
         params.append("minRating", filters.minRating.toString());
 
-      const response = await axios.get(
-        `http://localhost:5000/api/sitters?${params.toString()}`
-      );
+      const response = await proxy.get(`/sitters?${params.toString()}`);
 
       if (response.data.success) {
         setSitters(response.data.sitters);

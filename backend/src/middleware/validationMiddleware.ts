@@ -11,6 +11,14 @@ const isValidEmail = (email: string): boolean => {
 
 export const validateRequired = (fields: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.body) {
+      res.status(400).json({
+        success: false,
+        message: "Missing request body",
+      });
+      return;
+    }
+
     const missing: string[] = [];
 
     for (const field of fields) {
@@ -35,6 +43,13 @@ export const validateRequired = (fields: string[]) => {
 
 export const validateEmail = (field = "email") => {
   return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.body) {
+      res.status(400).json({
+        success: false,
+        message: "Missing request body",
+      });
+      return;
+    }
     if (req.body[field] && !isValidEmail(req.body[field])) {
       res.status(400).json({
         success: false,
@@ -48,6 +63,14 @@ export const validateEmail = (field = "email") => {
 
 export const validateNumeric = (fields: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.body) {
+      res.status(400).json({
+        success: false,
+        message: "Missing request body",
+      });
+      return;
+    }
+
     const invalid: string[] = [];
 
     for (const field of fields) {
@@ -71,7 +94,7 @@ export const validateNumeric = (fields: string[]) => {
 
 export const validateLength = (field: string, min?: number, max?: number) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.body[field]) {
+    if (!req.body || !req.body[field]) {
       return next();
     }
 
@@ -99,7 +122,7 @@ export const validateLength = (field: string, min?: number, max?: number) => {
 
 export const validateEnum = (field: string, allowedValues: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.body[field]) {
+    if (!req.body || !req.body[field]) {
       return next();
     }
 
@@ -118,7 +141,7 @@ export const validateEnum = (field: string, allowedValues: string[]) => {
 
 export const validateDate = (field: string) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.body[field]) {
+    if (!req.body || !req.body[field]) {
       return next();
     }
 
@@ -137,7 +160,7 @@ export const validateDate = (field: string) => {
 
 export const validatePhone = (field = "phoneNumber") => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.body[field]) {
+    if (!req.body || !req.body[field]) {
       return next();
     }
 
