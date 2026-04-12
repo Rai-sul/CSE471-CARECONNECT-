@@ -3,6 +3,7 @@
  */
 
 type ParentForMatching = {
+  locationAddress: string | null;
   latitude: number | null;
   longitude: number | null;
   requiredDays: string | null;
@@ -51,6 +52,12 @@ const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
 
 const roundTo2 = (value: number): number => Math.round(value * 100) / 100;
 
+const CITY_ALIASES: Record<string, string> = {
+  DHAKA: "DHAKA",
+  CHATTOGRAM: "CHATTOGRAM",
+  CHITTAGONG: "CHATTOGRAM",
+};
+
 const normalizeDays = (requiredDays: string | null): string[] => {
   if (!requiredDays) return [];
   const days = requiredDays
@@ -67,6 +74,42 @@ const getAverageStubbornness = (children: Array<{ stubbornnessLvl: number | null
 
   if (levels.length === 0) return null;
   return levels.reduce((sum, level) => sum + level, 0) / levels.length;
+};
+
+const normalizeCityText = (value: string): string =>
+  value
+    .toUpperCase()
+    .replace(/[^A-Z\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+export const extractCanonicalCity = (locationAddress: string | null): string | null => {
+  if (!locationAddress) return null;
+
+  const segments = locationAddress.split(",").map((segment) => segment.trim()).filter(Boolean);
+  const fallback = segments.length > 0 ? segments[segments.length - 1] : locationAddress;
+  const normalized = normalizeCityText(fallback);
+
+  if (!normalized) return null;
+
+  const aliasEntries = Object.entries(CITY_ALIASES).sort((a, b) => b[0].length - a[0].length);
+  const aliasMatch = aliasEntries.find(([alias]) => normalized.includes(alias));
+  if (aliasMatch) return aliasMatch[1];
+
+  return normalized;
+};
+
+export const filterSittersByParentCity = (
+  parentLocationAddress: string | null,
+  sitters: SitterForMatching[]
+): SitterForMatching[] => {
+  const parentCity = extractCanonicalCity(parentLocationAddress);
+  if (!parentCity) return sitters;
+
+  return sitters.filter((sitter) => {
+    const sitterCity = extractCanonicalCity(sitter.locationAddress);
+    return sitterCity === parentCity;
+  });
 };
 
 // ── Haversine distance (km) ──
