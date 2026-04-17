@@ -11,7 +11,7 @@ export const findBookingForPayment = (bookingId: string) =>
     },
   });
 
-// ── Create a pending payment record ──
+// ── Create a pending payment record (idempotent per booking) ──
 export const createPayment = (data: {
   bookingId: string;
   transactionId: string;
@@ -19,8 +19,10 @@ export const createPayment = (data: {
   currency: string;
   method: string;
 }) =>
-  prisma.payment.create({
-    data: { ...data, status: "PENDING" },
+  prisma.payment.upsert({
+    where: { bookingId: data.bookingId },
+    update: {},
+    create: { ...data, status: "PENDING" },
   });
 
 // ── Mark payment as completed ──

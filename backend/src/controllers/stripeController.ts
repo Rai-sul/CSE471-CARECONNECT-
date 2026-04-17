@@ -4,10 +4,31 @@ import * as StripeService from "../services/stripeService.js";
 import { sendPaymentConfirmationEmail } from "../services/emailService.js";
 import { AuthRequest } from "../types/index.js";
 import type { Stripe } from "../services/stripeService.js";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Stripe Payment Integration
  */
+
+// Public Stripe config for frontend checkout initialization
+export const getStripeConfig = async (_req: Request, res: Response): Promise<void> => {
+  const publishableKey =
+    process.env.STRIPE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+    "";
+
+  if (!publishableKey) {
+    res.status(200).json({
+      success: false,
+      message:
+        "Stripe publishable key is not configured. Add STRIPE_PUBLISHABLE_KEY to backend/.env.",
+      code: "STRIPE_PUBLISHABLE_KEY_NOT_CONFIGURED",
+    });
+    return;
+  }
+
+  res.status(200).json({ success: true, publishableKey });
+};
 
 // Create Stripe Payment Intent
 export const createPaymentIntent = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -49,7 +70,7 @@ export const createPaymentIntent = async (req: AuthRequest, res: Response): Prom
       try {
         payment = await StripeModel.createPayment({
           bookingId: booking.id,
-          transactionId: `TXN-${Date.now()}`,
+          transactionId: `TXN-${uuidv4().replace(/-/g, "").slice(0, 12).toUpperCase()}`,
           amount: totalAmount,
           currency: "BDT",
           method: "Stripe",

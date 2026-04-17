@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import prisma from "./config/db.js";
 import { requestId } from "./middleware/requestId.js";
 import { sanitizeInputs } from "./middleware/sanitizer.js";
-import { apiLimiter, authLimiter, sensitiveLimiter } from "./middleware/rateLimiter.js";
+import { apiLimiter, authLimiter } from "./middleware/rateLimiter.js";
 import {
   globalErrorHandler,
   notFoundHandler,
@@ -113,7 +113,7 @@ app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/video", videoRoutes);
-app.use("/api/stripe", sensitiveLimiter, stripeRoutes);
+app.use("/api/stripe", stripeRoutes);
 
 // --- Health Check ---
 app.get("/", (_req: Request, res: Response) => {

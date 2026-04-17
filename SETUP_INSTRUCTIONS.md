@@ -27,6 +27,7 @@ Edit `.env` with your values:
 - `JWT_SECRET` — a random secret (min 32 characters)
 - `SMTP_*` — Gmail credentials (use App Password with 2FA enabled)
 - `STRIPE_SECRET_KEY` — (optional) for Stripe payments
+- `STRIPE_PUBLISHABLE_KEY` — (optional) publishable key for frontend Stripe checkout fallback
 - `OPENAI_API_KEY` — (optional) for AI chatbot
 
 ```bash
@@ -55,7 +56,7 @@ cp .env.example .env.local
 
 Edit `.env.local` with:
 - `NEXT_PUBLIC_API_URL` — backend URL (default: `http://localhost:5000/api`)
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — (optional) for Stripe
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — (optional) for Stripe (if missing, frontend will try backend `/api/stripe/config`)
 - `NEXT_PUBLIC_STREAM_API_KEY` — (optional) for video calls
 
 ```bash

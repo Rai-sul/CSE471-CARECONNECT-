@@ -152,6 +152,36 @@ export const sendBookingRequestEmail = async (booking: EmailBooking, recipient: 
   );
 };
 
+export const sendBookingConfirmedEmail = async (
+  booking: EmailBooking,
+  recipient: EmailUser,
+  babysitterName?: string | null
+) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>Booking Confirmed ✅</h2>
+      <p>Hello ${recipient.name || recipient.email},</p>
+      <p>Great news! ${babysitterName || "Your babysitter"} has accepted your booking request.</p>
+      <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>Confirmed Booking Details:</strong></p>
+        <p>Date: ${new Date(booking.startTime).toLocaleString()}</p>
+        <p>Duration: ${Math.round((new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60 * 60) * 100) / 100} hours</p>
+        <p>Amount: ${booking.totalAmount} BDT</p>
+      </div>
+      <p>You can now complete payment and manage this booking from your dashboard.</p>
+      <p><a href="${process.env.FRONTEND_URL || "http://localhost:3000"}/account/bookings" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Confirmed Booking</a></p>
+      <br>
+      <p>Best regards,<br>The CareConnect Team</p>
+    </div>
+  `;
+
+  return await sendEmail(
+    recipient.email,
+    "Booking Confirmed - CareConnect",
+    html
+  );
+};
+
 export const sendPaymentConfirmationEmail = async (payment: EmailPayment, recipient: EmailUser) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

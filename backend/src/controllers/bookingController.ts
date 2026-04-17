@@ -1,6 +1,6 @@
 import { Response } from "express";
 import * as BookingModel from "../models/bookingModel.js";
-import { sendBookingRequestEmail } from "../services/emailService.js";
+import { sendBookingConfirmedEmail, sendBookingRequestEmail } from "../services/emailService.js";
 import { AuthRequest } from "../types/index.js";
 
 // @desc    Create a new booking request
@@ -106,7 +106,11 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response): Prom
 
     try {
       if (status === "CONFIRMED") {
-        await sendBookingRequestEmail(updatedBooking, updatedBooking.parent.user);
+        await sendBookingConfirmedEmail(
+          updatedBooking,
+          updatedBooking.parent.user,
+          updatedBooking.babysitter.user.name
+        );
       }
     } catch (emailError) { console.error("Failed to send status update email:", emailError); }
 

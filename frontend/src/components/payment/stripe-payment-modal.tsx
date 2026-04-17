@@ -10,7 +10,7 @@ import {
 } from "@stripe/react-stripe-js";
 import proxy from "@/lib/proxy";
 import toast from "react-hot-toast";
-import { X, CreditCard, Loader2, CheckCircle2 } from "lucide-react";
+import { X, CreditCard, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -19,12 +19,12 @@ import {
 } from "@/components/ui/alert-dialog";
 
 // Initialize Stripe
-const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
-const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
+const envStripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+const envStripePromise = envStripeKey ? loadStripe(envStripeKey) : null;
 
-if (!stripeKey) {
+if (!envStripeKey) {
   console.warn(
-    "⚠️  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY not found. Stripe payments will not work."
+    "⚠️  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY not found. Falling back to backend Stripe config endpoint."
   );
 }
 
@@ -35,6 +35,20 @@ interface StripePaymentModalProps {
   amount: number;
   onSuccess: () => void;
 }
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error
+  ) {
+    const response = (error as { response?: { data?: { message?: string } } })
+      .response;
+    if (response?.data?.message) return response.data.message;
+  }
+
+  return fallback;
+};
 
 // Payment Form Component
 function PaymentForm({
@@ -52,7 +66,6 @@ function PaymentForm({
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
 
   useEffect(() => {
     // Create payment intent when component mounts
@@ -65,13 +78,10 @@ function PaymentForm({
 
         if (response.data.success) {
           setClientSecret(response.data.clientSecret);
-          setPaymentIntentId(response.data.paymentIntentId);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error creating payment intent:", error);
-        toast.error(
-          error.response?.data?.message || "Failed to initialize payment"
-        );
+        toast.error(getErrorMessage(error, "Failed to initialize payment"));
         onClose();
       } finally {
         setLoading(false);
@@ -129,11 +139,9 @@ function PaymentForm({
           toast.error("Payment verification failed");
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Payment error:", error);
-      toast.error(
-        error.response?.data?.message || "Payment processing failed"
-      );
+      toast.error(getErrorMessage(error, "Payment processing failed"));
     } finally {
       setLoading(false);
     }
@@ -212,6 +220,39 @@ export default function StripePaymentModal({
   amount,
   onSuccess,
 }: StripePaymentModalProps) {
+  const [stripePromise, setStripePromise] = useState(envStripePromise);
+  const [configLoading, setConfigLoading] = useState(false);
+  const [configError, setConfigError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen || stripePromise) return;
+
+    const fetchStripeConfig = async () => {
+      try {
+        setConfigLoading(true);
+        const response = await proxy.get("/stripe/config");
+        const publishableKey = response.data?.publishableKey as string | undefined;
+
+        if (response.data?.success && publishableKey) {
+          setStripePromise(loadStripe(publishableKey));
+          setConfigError(null);
+          return;
+        }
+
+        setConfigError(
+          response.data?.message ||
+            "Stripe publishable key is not configured."
+        );
+      } catch (error: unknown) {
+        setConfigError(getErrorMessage(error, "Failed to load Stripe configuration."));
+      } finally {
+        setConfigLoading(false);
+      }
+    };
+
+    void fetchStripeConfig();
+  }, [isOpen, stripePromise]);
+
   if (!isOpen) return null;
 
   return (
@@ -233,7 +274,12 @@ export default function StripePaymentModal({
         </AlertDialogHeader>
 
         <div className="py-4">
-          {stripePromise ? (
+          {configLoading ? (
+            <div className="text-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin mx-auto text-purple-600" />
+              <p className="text-sm text-slate-500 mt-3">Loading payment setup...</p>
+            </div>
+          ) : stripePromise ? (
             <Elements stripe={stripePromise}>
               <PaymentForm
                 bookingId={bookingId}
@@ -248,12 +294,15 @@ export default function StripePaymentModal({
                 Stripe is not configured
               </p>
               <p className="text-sm text-slate-500">
-                Please add <code className="bg-slate-100 px-2 py-1 rounded">NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> to your
-                <code className="bg-slate-100 px-2 py-1 rounded mx-1">.env.local</code> file.
+                Please add{" "}
+                <code className="bg-slate-100 px-2 py-1 rounded">NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code>{" "}
+                in <code className="bg-slate-100 px-2 py-1 rounded mx-1">frontend/.env.local</code>{" "}
+                or{" "}
+                <code className="bg-slate-100 px-2 py-1 rounded mx-1">STRIPE_PUBLISHABLE_KEY</code>{" "}
+                in{" "}
+                <code className="bg-slate-100 px-2 py-1 rounded mx-1">backend/.env</code>.
               </p>
-              <p className="text-xs text-slate-400 mt-4">
-                File location: <code>frontend/.env.local</code>
-              </p>
+              {configError && <p className="text-xs text-red-500 mt-3">{configError}</p>}
             </div>
           )}
         </div>
@@ -261,4 +310,3 @@ export default function StripePaymentModal({
     </AlertDialog>
   );
 }
-
