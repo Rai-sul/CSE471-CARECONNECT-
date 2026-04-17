@@ -8,6 +8,21 @@ const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   : null;
 
+const isOpenAIQuotaError = (error: unknown): boolean => {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { code?: string; type?: string; status?: number };
+  return (
+    candidate.status === 429 &&
+    (candidate.code === "insufficient_quota" || candidate.type === "insufficient_quota")
+  );
+};
+
+const isOpenAIRateLimitError = (error: unknown): boolean => {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { status?: number; code?: string };
+  return candidate.status === 429 && candidate.code !== "insufficient_quota";
+};
+
 // ── Simple regex-based fallback responses ──
 const getSimpleResponse = (message: string): string => {
   const lowerMessage = message.toLowerCase();
@@ -50,7 +65,13 @@ export const getBotResponse = async (message: string): Promise<string> => {
       });
       return completion.choices[0].message.content || getSimpleResponse(message);
     } catch (error) {
-      console.error("OpenAI Error:", error);
+      if (isOpenAIQuotaError(error)) {
+        console.warn("OpenAI quota exceeded. Falling back to local chatbot responses.");
+      } else if (isOpenAIRateLimitError(error)) {
+        console.warn("OpenAI rate-limited. Falling back to local chatbot responses.");
+      } else {
+        console.error("OpenAI Error:", error);
+      }
       return getSimpleResponse(message);
     }
   }
