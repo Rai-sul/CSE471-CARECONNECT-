@@ -72,6 +72,7 @@ The frontend will run on **http://localhost:3000**.
 
 - **Frontend (Vercel env):**
   - `NEXT_PUBLIC_API_URL=https://<your-backend-domain>/api`
+  - Do **not** set this to your frontend Vercel URL (`https://<app>.vercel.app/api`) unless your backend is actually served there.
 - **Backend env:**
   - `CLIENT_URL=https://<your-vercel-domain>`
   - `CLIENT_URLS=https://<your-vercel-domain>,https://<your-preview-domain>` (optional, comma-separated)
