@@ -70,6 +70,14 @@ The frontend will run on **http://localhost:3000**.
 
 ## 4. Production Deployment Notes (Vercel)
 
+- **Backend hosting (Render recommended):**
+  - `Root Directory=backend`
+  - `Build Command=npm ci --include=dev && npm run build`
+  - `Start Command=npm run start`
+  - `Node Version=20`
+  - If you keep Root Directory empty, use:
+    - `Build Command=cd backend && npm ci --include=dev && npm run build`
+    - `Start Command=cd backend && npm run start`
 - **Frontend (Vercel env):**
   - `NEXT_PUBLIC_API_URL=https://<your-backend-domain>/api`
   - Do **not** set this to your frontend Vercel URL (`https://<app>.vercel.app/api`) unless your backend is actually served there.

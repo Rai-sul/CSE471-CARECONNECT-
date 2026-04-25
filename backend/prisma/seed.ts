@@ -62,7 +62,7 @@ async function main(): Promise<void> {
   // --- Admin Users ---
   console.log("👤 Creating admin users...");
   const adminData: AdminData[] = [
-    { name: "Mahmud Admin", email: "Mahmud.Admin@gmail.com", password: "Mahmud@#1234" },
+    { name: "CareConnect Admin", email: "admin@careconnect.com", password: "admin123" },
     { name: "Tanvir Ahmed", email: "tanvir@admin.careconnect.com", password: "tanvir@123" },
     { name: "Mariam Hossain", email: "mariam@admin.careconnect.com", password: "mariamPass" },
     { name: "Rafiul Islam", email: "rafiul@admin.careconnect.com", password: "rafiul321" },
@@ -89,7 +89,7 @@ async function main(): Promise<void> {
   // --- Parent Users ---
   console.log("👨‍👩‍👧 Creating parent users...");
   const parentData: ParentData[] = [
-    { name: "Farzana Rahman", email: "farzana.rahman@careconnect.com", password: "pass123", stubbornnessLvl: 2, daysNeeded: "Mon,Wed,Fri", minBudget: 3000, maxBudget: 5000, about: "Single mother looking for part-time help." },
+    { name: "CareConnect Parent", email: "parent@careconnect.com", password: "parent123", stubbornnessLvl: 2, daysNeeded: "Mon,Wed,Fri", minBudget: 3000, maxBudget: 5000, about: "Single mother looking for part-time help." },
     { name: "Shafiq Islam", email: "shafiq.islam@careconnect.com", password: "safe456", stubbornnessLvl: 3, daysNeeded: "Mon,Tue,Wed,Thu,Fri", minBudget: 5000, maxBudget: 7000, about: "Working dad with twins." },
     { name: "Nasima Khatun", email: "nasima.khatun@careconnect.com", password: "nasima789", stubbornnessLvl: 1, daysNeeded: "Sat,Sun", minBudget: 2000, maxBudget: 3000, about: "Needs occasional babysitting on weekends." },
     { name: "Jamal Uddin", email: "jamal.uddin@careconnect.com", password: "jamal456", stubbornnessLvl: 4, daysNeeded: "Mon,Tue,Wed,Thu,Fri,Sat", minBudget: 6000, maxBudget: 8000, about: "Strict but caring parent of 3." },
@@ -128,7 +128,7 @@ async function main(): Promise<void> {
   // --- Babysitter Users ---
   console.log("👶 Creating babysitter users...");
   const sitterData: SitterData[] = [
-    { name: "Munim Hasan", email: "munim.hasan@gmail.com", password: "Pass123", location: "Dhaka", lat: 23.80452690, lng: 90.39803982, active: true, daysFree: 12 },
+    { name: "CareConnect Sitter", email: "sitter@careconnect.com", password: "sitter123", location: "Dhaka", lat: 23.80452690, lng: 90.39803982, active: true, daysFree: 12 },
     { name: "Isha Rahman", email: "isha.rahman@gmail.com", password: "Pass124", location: "Dhaka", lat: 23.80530000, lng: 90.41750000, active: false, daysFree: null },
     { name: "Mahmud Khan", email: "mahmud.khan@gmail.com", password: "Pass125", location: "Dhaka", lat: 23.81530000, lng: 90.40750000, active: false, daysFree: null },
     { name: "Habiba Sultana", email: "habiba.sultana@gmail.com", password: "Pass126", location: "Dhaka", lat: 23.81230000, lng: 90.41550000, active: false, daysFree: null },
