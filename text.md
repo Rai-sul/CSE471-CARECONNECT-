@@ -25,7 +25,7 @@ Vercel doesn't support long-running Express servers. Choose ONE:
    - **Name:** `careconnect-api`
    - **Environment:** `Node`
    - **Root Directory:** `backend`
-   - **Build Command:** `npm ci --include=dev && npm run build`
+   - **Build Command:** `npm install --include=dev && npm run build`
    - **Start Command:** `npm run start`
    - **Node Version:** `20`
    - **Region:** (closest to you)
@@ -58,7 +58,7 @@ STREAM_API_KEY=...
 If your Root Directory is left blank by mistake, use these commands instead:
 
 ```
-Build Command: cd backend && npm ci --include=dev && npm run build
+Build Command: cd backend && npm install --include=dev && npm run build
 Start Command: cd backend && npm run start
 ```
 
