@@ -18,7 +18,7 @@ The goal of CareConnect is to make childcare booking safer, easier, and more tra
 
 ### 🌐 Live Demo
 
-[CareConnect Live Demo](https://careconnect.vercel.app/)
+[CareConnect Live Demo](https://cse-471-careconnect-olive.vercel.app/)
 
 You can test the platform using the following demo credentials:
 
